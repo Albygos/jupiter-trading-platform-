@@ -1,115 +1,49 @@
 
 import { useState, useEffect } from "react";
-import {
-  ComposedChart,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Bar,
-} from "recharts";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Card } from "./ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 
-// Enhanced mock data for candlesticks
-const generateCandlestickData = (basePrice: number) => {
+// Mock data function enhanced for multiple pairs
+const generateMockData = (basePrice: number) => {
   const data = [];
-  let currentPrice = basePrice;
-  
+  let price = basePrice;
   for (let i = 0; i < 24; i++) {
-    const open = currentPrice;
-    const close = currentPrice + (Math.random() - 0.5) * (basePrice * 0.02);
-    const high = Math.max(open, close) + Math.random() * (basePrice * 0.01);
-    const low = Math.min(open, close) - Math.random() * (basePrice * 0.01);
-    
+    price = price + (Math.random() - 0.5) * (basePrice * 0.05);
     data.push({
       time: `${i}:00`,
-      open,
-      close,
-      high,
-      low,
+      price: price.toFixed(2),
       volume: Math.floor(Math.random() * 1000),
     });
-    
-    currentPrice = close;
   }
   return data;
 };
 
-// Extended trading pairs list
-const AVAILABLE_PAIRS = [
-  { pair: "SOL/USDC", basePrice: 100, color: "#8884d8" },
-  { pair: "JUP/USDC", basePrice: 0.5, color: "#82ca9d" },
-  { pair: "BONK/USDC", basePrice: 0.00001, color: "#ffc658" },
-  { pair: "RAY/USDC", basePrice: 1.5, color: "#ff7300" },
-  { pair: "ORCA/USDC", basePrice: 2.0, color: "#8dd1e1" },
-  { pair: "MNGO/USDC", basePrice: 0.1, color: "#a4de6c" },
-  { pair: "SRM/USDC", basePrice: 0.8, color: "#d0ed57" },
-  { pair: "FIDA/USDC", basePrice: 0.3, color: "#8c76f9" }
-];
-
 interface PairChartProps {
-  onPairChange?: (pair: string) => void;
+  pair: string;
+  basePrice: number;
+  color: string;
 }
 
-export const PairChart = ({ onPairChange }: PairChartProps) => {
-  const [selectedPair, setSelectedPair] = useState(AVAILABLE_PAIRS[0]);
+export const PairChart = ({ pair, basePrice, color }: PairChartProps) => {
   const [timeframe, setTimeframe] = useState<"1H" | "4H" | "1D" | "1W">("1D");
-  const [data, setData] = useState(generateCandlestickData(selectedPair.basePrice));
+  const [data, setData] = useState(generateMockData(basePrice));
 
   useEffect(() => {
     // Simulate real-time updates
     const interval = setInterval(() => {
-      setData(generateCandlestickData(selectedPair.basePrice));
+      setData(generateMockData(basePrice));
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [timeframe, selectedPair]);
-
-  const handlePairChange = (value: string) => {
-    const newPair = AVAILABLE_PAIRS.find(p => p.pair === value) || AVAILABLE_PAIRS[0];
-    setSelectedPair(newPair);
-    if (onPairChange) {
-      onPairChange(value);
-    }
-  };
-
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      return (
-        <div className="bg-background border p-2 rounded-lg shadow-lg">
-          <p className="font-semibold">Time: {data.time}</p>
-          <p>Open: {data.open.toFixed(4)}</p>
-          <p>High: {data.high.toFixed(4)}</p>
-          <p>Low: {data.low.toFixed(4)}</p>
-          <p>Close: {data.close.toFixed(4)}</p>
-          <p>Volume: {data.volume}</p>
-        </div>
-      );
-    }
-    return null;
-  };
+  }, [timeframe, basePrice]);
 
   return (
     <Card className="p-4">
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-4">
-          <Select value={selectedPair.pair} onValueChange={handlePairChange}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Select pair" />
-            </SelectTrigger>
-            <SelectContent>
-              {AVAILABLE_PAIRS.map((p) => (
-                <SelectItem key={p.pair} value={p.pair}>
-                  {p.pair}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <span className="text-xl font-semibold" style={{ color: selectedPair.color }}>
-            {data[data.length - 1]?.close.toFixed(4)}
+        <div className="flex items-center gap-2">
+          <h3 className="text-lg font-bold">{pair}</h3>
+          <span className="text-xl font-semibold" style={{ color }}>
+            {data[data.length - 1]?.price}
           </span>
         </div>
         <div className="flex gap-1">
@@ -129,26 +63,27 @@ export const PairChart = ({ onPairChange }: PairChartProps) => {
         </div>
       </div>
 
-      <div className="h-[400px] w-full">
+      <div className="h-[200px] w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart data={data}>
+          <AreaChart data={data}>
+            <defs>
+              <linearGradient id={`color${pair}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={color} stopOpacity={0.8} />
+                <stop offset="95%" stopColor={color} stopOpacity={0} />
+              </linearGradient>
+            </defs>
             <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
             <XAxis dataKey="time" />
             <YAxis />
-            <Tooltip content={<CustomTooltip />} />
-            <Bar
-              dataKey="volume"
-              fill={selectedPair.color}
-              opacity={0.3}
-              yAxisId={1}
+            <Tooltip />
+            <Area
+              type="monotone"
+              dataKey="price"
+              stroke={color}
+              fillOpacity={1}
+              fill={`url(#color${pair})`}
             />
-            <Bar
-              dataKey={[["open", "close", "high", "low"]]}
-              fill={selectedPair.color}
-              stroke={selectedPair.color}
-              strokeWidth={1}
-            />
-          </ComposedChart>
+          </AreaChart>
         </ResponsiveContainer>
       </div>
     </Card>
