@@ -4,6 +4,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { ChartLine, ArrowUp, ArrowDown, Clock, Settings } from "lucide-react";
 import { PairChart } from "./PairChart";
+import { toast } from "sonner";
 
 // Data for multiple trading pairs
 const TRADING_PAIRS = [
@@ -21,29 +22,31 @@ export const TradingView = () => {
   const [takeProfit, setTakeProfit] = useState("");
 
   const handleTrade = (direction: "buy" | "sell") => {
-    // Implementation will come in next iteration
-    console.log(`${direction} order placed`, {
-      type: orderType,
-      amount,
-      price,
-      stopLoss,
-      takeProfit,
+    if (!amount) {
+      toast.error("Please enter an amount");
+      return;
+    }
+
+    if (orderType === "limit" && !price) {
+      toast.error("Please enter a limit price");
+      return;
+    }
+
+    toast.success(`${direction.toUpperCase()} order placed successfully`, {
+      description: `${amount} SOL at ${orderType === "market" ? "market price" : `$${price}`}`
     });
+
+    // Reset form
+    setAmount("");
+    setPrice("");
+    setStopLoss("");
+    setTakeProfit("");
   };
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 animate-fadeIn">
       <div className="lg:col-span-9 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {TRADING_PAIRS.map((pairData) => (
-            <PairChart
-              key={pairData.pair}
-              pair={pairData.pair}
-              basePrice={pairData.basePrice}
-              color={pairData.color}
-            />
-          ))}
-        </div>
+        <PairChart />
         
         <Card className="p-6">
           <div className="mb-4 flex items-center justify-between">
