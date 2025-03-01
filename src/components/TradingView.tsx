@@ -3,7 +3,8 @@ import { useState } from "react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { ChartLine, ArrowUp, ArrowDown } from "lucide-react";
+import { ChartLine, ArrowUp, ArrowDown, Clock, Settings } from "lucide-react";
+import { PairChart } from "./PairChart";
 
 export const TradingView = () => {
   const [orderType, setOrderType] = useState<"market" | "limit">("market");
@@ -25,41 +26,40 @@ export const TradingView = () => {
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 animate-fadeIn">
-      <div className="lg:col-span-8">
+      <div className="lg:col-span-9 space-y-6">
+        <PairChart />
+        
         <Card className="p-6">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-2xl font-bold">SOL/USDC</h2>
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setOrderType("market")}
-                className={orderType === "market" ? "bg-primary text-primary-foreground" : ""}
-              >
-                Market
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setOrderType("limit")}
-                className={orderType === "limit" ? "bg-primary text-primary-foreground" : ""}
-              >
-                Limit
-              </Button>
-            </div>
-          </div>
-          
-          <div className="chart-container mb-6">
-            <div className="flex items-center justify-center h-full">
-              <ChartLine className="h-12 w-12 text-muted-foreground" />
-              <span className="ml-2 text-muted-foreground">Chart coming soon</span>
+            <div className="flex items-center gap-4">
+              <h2 className="text-2xl font-bold">Trading</h2>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setOrderType("market")}
+                  className={orderType === "market" ? "bg-primary text-primary-foreground" : ""}
+                >
+                  <Clock className="mr-2 h-4 w-4" />
+                  Market
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setOrderType("limit")}
+                  className={orderType === "limit" ? "bg-primary text-primary-foreground" : ""}
+                >
+                  <Settings className="mr-2 h-4 w-4" />
+                  Limit
+                </Button>
+              </div>
             </div>
           </div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium">Amount</label>
+                <label className="text-sm font-medium mb-1.5 block">Amount (SOL)</label>
                 <Input
                   type="number"
                   value={amount}
@@ -70,7 +70,7 @@ export const TradingView = () => {
               </div>
               {orderType === "limit" && (
                 <div>
-                  <label className="text-sm font-medium">Limit Price</label>
+                  <label className="text-sm font-medium mb-1.5 block">Limit Price (USDC)</label>
                   <Input
                     type="number"
                     value={price}
@@ -83,7 +83,7 @@ export const TradingView = () => {
             </div>
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium">Stop Loss</label>
+                <label className="text-sm font-medium mb-1.5 block">Stop Loss (USDC)</label>
                 <Input
                   type="number"
                   value={stopLoss}
@@ -93,7 +93,7 @@ export const TradingView = () => {
                 />
               </div>
               <div>
-                <label className="text-sm font-medium">Take Profit</label>
+                <label className="text-sm font-medium mb-1.5 block">Take Profit (USDC)</label>
                 <Input
                   type="number"
                   value={takeProfit}
@@ -107,6 +107,7 @@ export const TradingView = () => {
 
           <div className="mt-6 grid grid-cols-2 gap-4">
             <Button
+              size="lg"
               className="bg-trading-success hover:bg-trading-success/90 text-white"
               onClick={() => handleTrade("buy")}
             >
@@ -114,6 +115,7 @@ export const TradingView = () => {
               Buy SOL
             </Button>
             <Button
+              size="lg"
               className="bg-trading-danger hover:bg-trading-danger/90 text-white"
               onClick={() => handleTrade("sell")}
             >
@@ -124,17 +126,28 @@ export const TradingView = () => {
         </Card>
       </div>
 
-      <div className="lg:col-span-4 space-y-6">
+      <div className="lg:col-span-3 space-y-6">
         <Card className="p-4">
           <h3 className="text-lg font-semibold mb-4">Order Book</h3>
           <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-trading-danger">43.50</span>
-              <span>0.5234 SOL</span>
+            <div className="grid grid-cols-2 text-sm font-medium text-muted-foreground mb-2">
+              <span>Price (USDC)</span>
+              <span className="text-right">Size (SOL)</span>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-trading-success">43.45</span>
-              <span>1.2399 SOL</span>
+            <div className="space-y-1">
+              {[...Array(5)].map((_, i) => (
+                <div key={`ask-${i}`} className="flex justify-between text-sm">
+                  <span className="text-trading-danger">{(43.50 + i * 0.05).toFixed(2)}</span>
+                  <span>{(0.5234 - i * 0.1).toFixed(4)}</span>
+                </div>
+              ))}
+              <div className="text-center py-2 text-lg font-semibold">43.45</div>
+              {[...Array(5)].map((_, i) => (
+                <div key={`bid-${i}`} className="flex justify-between text-sm">
+                  <span className="text-trading-success">{(43.40 - i * 0.05).toFixed(2)}</span>
+                  <span>{(0.6234 + i * 0.1).toFixed(4)}</span>
+                </div>
+              ))}
             </div>
           </div>
         </Card>
@@ -142,16 +155,20 @@ export const TradingView = () => {
         <Card className="p-4">
           <h3 className="text-lg font-semibold mb-4">Recent Trades</h3>
           <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-trading-success">Buy</span>
-              <span>0.5234 SOL</span>
-              <span>$43.50</span>
+            <div className="grid grid-cols-3 text-sm font-medium text-muted-foreground mb-2">
+              <span>Side</span>
+              <span>Size</span>
+              <span className="text-right">Price</span>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-trading-danger">Sell</span>
-              <span>1.2399 SOL</span>
-              <span>$43.45</span>
-            </div>
+            {[...Array(10)].map((_, i) => (
+              <div key={i} className="grid grid-cols-3 text-sm">
+                <span className={i % 2 === 0 ? "text-trading-success" : "text-trading-danger"}>
+                  {i % 2 === 0 ? "Buy" : "Sell"}
+                </span>
+                <span>{(0.5234 + i * 0.1234).toFixed(4)}</span>
+                <span className="text-right">${(43.45 + i * 0.01).toFixed(2)}</span>
+              </div>
+            ))}
           </div>
         </Card>
       </div>
