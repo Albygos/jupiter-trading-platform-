@@ -1,10 +1,17 @@
-
 import { useState } from "react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { ChartLine, ArrowUp, ArrowDown, Clock, Settings } from "lucide-react";
 import { PairChart } from "./PairChart";
+
+// Data for multiple trading pairs
+const TRADING_PAIRS = [
+  { pair: "SOL/USDC", basePrice: 100, color: "#8884d8" },
+  { pair: "JUP/USDC", basePrice: 0.5, color: "#82ca9d" },
+  { pair: "BONK/USDC", basePrice: 0.00001, color: "#ffc658" },
+  { pair: "RAY/USDC", basePrice: 1.5, color: "#ff7300" },
+];
 
 export const TradingView = () => {
   const [orderType, setOrderType] = useState<"market" | "limit">("market");
@@ -27,7 +34,16 @@ export const TradingView = () => {
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 animate-fadeIn">
       <div className="lg:col-span-9 space-y-6">
-        <PairChart />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {TRADING_PAIRS.map((pairData) => (
+            <PairChart
+              key={pairData.pair}
+              pair={pairData.pair}
+              basePrice={pairData.basePrice}
+              color={pairData.color}
+            />
+          ))}
+        </div>
         
         <Card className="p-6">
           <div className="mb-4 flex items-center justify-between">
