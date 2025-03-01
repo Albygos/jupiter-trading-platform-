@@ -23,3 +23,4 @@ This project is built with .
 - shadcn-ui
 - Tailwind CSS
 
+ live website link:https://jupiter-trading-platform.vercel.app/
