@@ -1,12 +1,13 @@
 
 import { useState, useEffect } from "react";
 import {
-  CandlestickChart,
+  ComposedChart,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  Bar,
 } from "recharts";
 import { Card } from "./ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
@@ -74,6 +75,23 @@ export const PairChart = ({ onPairChange }: PairChartProps) => {
     }
   };
 
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-background border p-2 rounded-lg shadow-lg">
+          <p className="font-semibold">Time: {data.time}</p>
+          <p>Open: {data.open.toFixed(4)}</p>
+          <p>High: {data.high.toFixed(4)}</p>
+          <p>Low: {data.low.toFixed(4)}</p>
+          <p>Close: {data.close.toFixed(4)}</p>
+          <p>Volume: {data.volume}</p>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <Card className="p-4">
       <div className="flex items-center justify-between mb-4">
@@ -113,27 +131,24 @@ export const PairChart = ({ onPairChange }: PairChartProps) => {
 
       <div className="h-[400px] w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <CandlestickChart data={data}>
+          <ComposedChart data={data}>
             <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
             <XAxis dataKey="time" />
             <YAxis />
-            <Tooltip
-              content={({ payload }) => {
-                if (!payload || !payload.length) return null;
-                const data = payload[0].payload;
-                return (
-                  <div className="bg-background border p-2 rounded-lg shadow-lg">
-                    <p className="font-semibold">Time: {data.time}</p>
-                    <p>Open: {data.open.toFixed(4)}</p>
-                    <p>High: {data.high.toFixed(4)}</p>
-                    <p>Low: {data.low.toFixed(4)}</p>
-                    <p>Close: {data.close.toFixed(4)}</p>
-                    <p>Volume: {data.volume}</p>
-                  </div>
-                );
-              }}
+            <Tooltip content={<CustomTooltip />} />
+            <Bar
+              dataKey="volume"
+              fill={selectedPair.color}
+              opacity={0.3}
+              yAxisId={1}
             />
-          </CandlestickChart>
+            <Bar
+              dataKey={[["open", "close", "high", "low"]]}
+              fill={selectedPair.color}
+              stroke={selectedPair.color}
+              strokeWidth={1}
+            />
+          </ComposedChart>
         </ResponsiveContainer>
       </div>
     </Card>
